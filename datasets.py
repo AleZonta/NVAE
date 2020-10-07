@@ -12,6 +12,7 @@ import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import os
 import utils
+from Audio.load import load
 from lmdb_datasets import LMDBDataset
 from thirdparty.lsun import LSUN
 
@@ -109,6 +110,9 @@ def get_loaders_eval(dataset, args):
         train_transform, valid_transform = _data_transforms_generic(resize)
         train_data = LMDBDataset(root=args.data, name='ffhq', train=True, transform=train_transform)
         valid_data = LMDBDataset(root=args.data, name='ffhq', train=False, transform=valid_transform)
+    elif dataset == "audio":
+        num_classes = 1
+        train_data, valid_queue, _ = load(args=args)
     else:
         raise NotImplementedError
 

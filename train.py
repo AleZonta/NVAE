@@ -387,6 +387,13 @@ if __name__ == '__main__':
                         help='address for master')
     parser.add_argument('--seed', type=int, default=1,
                         help='seed used for initialization')
+
+    parser.add_argument("--x", default=50, type=int)
+    parser.add_argument("--y", default=99, type=int)
+    parser.add_argument("--in_channels", default=3, type=int)
+    parser.add_argument('--source_folder', default="/Users/alessandrozonta/Desktop/",
+                        help="root where to store data")
+
     args = parser.parse_args()
     args.save = args.root + '/eval-' + args.save
     utils.create_exp_dir(args.save)
