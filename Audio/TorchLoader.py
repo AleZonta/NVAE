@@ -73,7 +73,6 @@ class TorchLoader(LoadData):
         if not torch.is_tensor(self._x_test_set):
             self._x_test_set, self._y_test_set = self._load_audio_and_files(folder=test_set_folder,
                                                                             new_sample_rate=self._sample_rate)
-        self._log.info("Data read from source")
         return self
 
     def save_data(self, destination_path):
@@ -95,8 +94,6 @@ class TorchLoader(LoadData):
             np.savez("{}/validation_set_t_{}".format(destination_path, self._sample_rate), self._x_val_set.numpy(),
                      self._y_val_set)
             saved = True
-        if saved:
-            self._log.info("Data saved")
         return self
 
     def load_data(self, source_path):

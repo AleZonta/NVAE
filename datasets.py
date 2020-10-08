@@ -112,7 +112,7 @@ def get_loaders_eval(dataset, args):
         valid_data = LMDBDataset(root=args.data, name='ffhq', train=False, transform=valid_transform)
     elif dataset == "audio":
         num_classes = 1
-        train_data, valid_queue, _ = load(args=args)
+        train_data, valid_data, _ = load(args=args)
     else:
         raise NotImplementedError
 

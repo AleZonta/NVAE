@@ -134,7 +134,7 @@ class AutoEncoder(nn.Module):
         self.num_cell_per_cond_dec = args.num_cell_per_cond_dec  # number of cell for each conditional in decoder
 
         # general cell parameters
-        self.input_size = get_input_size(self.dataset)
+        self.input_size = get_input_size(self.dataset, args)
 
         # decoder param
         self.num_mix_output = 10
@@ -480,7 +480,7 @@ class AutoEncoder(nn.Module):
         if self.dataset == 'mnist':
             return Bernoulli(logits=logits)
         elif self.dataset in {'cifar10', 'celeba_64', 'celeba_256', 'imagenet_32', 'imagenet_64', 'ffhq',
-                              'lsun_bedroom_128', 'lsun_bedroom_256'}:
+                              'lsun_bedroom_128', 'lsun_bedroom_256', "audio"}:
             return DiscMixLogistic(logits, self.num_mix_output, num_bits=self.num_bits)
         else:
             raise NotImplementedError

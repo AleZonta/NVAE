@@ -58,7 +58,7 @@ def main(args):
         cnn_optimizer, float(args.epochs - args.warmup_epochs - 1), eta_min=args.learning_rate_min)
     grad_scalar = GradScaler(2**10)
 
-    num_output = utils.num_output(args.dataset)
+    num_output = utils.num_output(args.dataset, args)
     bpd_coeff = 1. / np.log(2.) / num_output
 
     # if load
@@ -144,7 +144,7 @@ def train(train_queue, model, cnn_optimizer, grad_scalar, global_step, warmup_it
     model.train()
     for step, x in enumerate(train_queue):
         x = x[0] if len(x) > 1 else x
-        x = x.cuda()
+        x = x.half().cuda()
 
         # change bit length
         x = utils.pre_process(x, args.num_x_bits)
@@ -241,7 +241,7 @@ def test(valid_queue, model, num_samples, args, logging):
     model.eval()
     for step, x in enumerate(valid_queue):
         x = x[0] if len(x) > 1 else x
-        x = x.cuda()
+        x = x.float().cuda()
 
         # change bit length
         x = utils.pre_process(x, args.num_x_bits)
@@ -296,7 +296,7 @@ if __name__ == '__main__':
     # data
     parser.add_argument('--dataset', type=str, default='mnist',
                         choices=['cifar10', 'mnist', 'celeba_64', 'celeba_256',
-                                 'imagenet_32', 'ffhq', 'lsun_bedroom_128'],
+                                 'imagenet_32', 'ffhq', 'lsun_bedroom_128', "audio"],
                         help='which dataset to use')
     parser.add_argument('--data', type=str, default='/tmp/nasvae/data',
                         help='location of the data corpus')
@@ -350,7 +350,7 @@ if __name__ == '__main__':
     # encoder parameters
     parser.add_argument('--num_channels_enc', type=int, default=32,
                         help='number of channels in encoder')
-    parser.add_argument('--num_preprocess_blocks', type=int, default=2,
+    parser.add_argument('--num_prnum_postprocess_blockseprocess_blocks', type=int, default=2,
                         help='number of preprocessing blocks')
     parser.add_argument('--num_preprocess_cells', type=int, default=3,
                         help='number of cells per block')

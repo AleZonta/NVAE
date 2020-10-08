@@ -293,7 +293,7 @@ def one_hot(indices, depth, dim):
     return y_onehot
 
 
-def num_output(dataset):
+def num_output(dataset, args):
     if dataset == 'mnist':
         return 28 * 28
     elif dataset == 'cifar10':
@@ -303,13 +303,31 @@ def num_output(dataset):
         return 3 * size * size
     elif dataset == 'ffhq':
         return 3 * 256 * 256
+    elif dataset == 'audio':
+        y = args.y
+        if y == 49:
+            size = 64
+        else:
+            size = 128
+        if y == 40:
+            size = 64
+        return size * size * args.in_channels
     else:
         raise NotImplementedError
 
 
-def get_input_size(dataset):
+def get_input_size(dataset, args):
     if dataset == 'mnist':
         return 32
+    elif dataset == 'audio':
+        y = args.y
+        if y == 49:
+            size = 64
+        else:
+            size = 128
+        if y == 40:
+            size = 64
+        return size
     elif dataset == 'cifar10':
         return 32
     elif dataset.startswith('celeba') or dataset.startswith('imagenet') or dataset.startswith('lsun'):
