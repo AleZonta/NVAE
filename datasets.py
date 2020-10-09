@@ -112,14 +112,15 @@ def get_loaders_eval(dataset, args):
         valid_data = LMDBDataset(root=args.data, name='ffhq', train=False, transform=valid_transform)
     elif dataset == "audio":
         num_classes = 1
-        train_data, valid_data, _ = load(args=args)
+        train_data, valid_data, test_data = load(args=args)
     else:
         raise NotImplementedError
 
-    train_sampler, valid_sampler = None, None
+    train_sampler, valid_sampler,test_sampler = None, None, None
     if args.distributed:
         train_sampler = torch.utils.data.distributed.DistributedSampler(train_data)
         valid_sampler = torch.utils.data.distributed.DistributedSampler(valid_data)
+        test_sampler = torch.utils.data.distributed.DistributedSampler(test_data)
 
     train_queue = torch.utils.data.DataLoader(
         train_data, batch_size=args.batch_size,
@@ -131,7 +132,12 @@ def get_loaders_eval(dataset, args):
         shuffle=(valid_sampler is None),
         sampler=valid_sampler, pin_memory=True, num_workers=1, drop_last=False)
 
-    return train_queue, valid_queue, num_classes
+    test_queue = torch.utils.data.DataLoader(
+        test_data, batch_size=args.batch_size,
+        shuffle=(test_sampler is None),
+        sampler=test_sampler, pin_memory=True, num_workers=1, drop_last=False)
+
+    return train_queue, valid_queue, num_classes, test_queue
 
 
 def _data_transforms_cifar10(args):

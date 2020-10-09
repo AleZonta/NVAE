@@ -6,6 +6,8 @@
 # ---------------------------------------------------------------
 
 import argparse
+import pickle
+
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
@@ -56,14 +58,17 @@ def main(eval_args):
     if eval_args.eval_mode == 'evaluate':
         # load train valid queue
         args.data = eval_args.data
-        train_queue, valid_queue, num_classes = datasets.get_loaders(args)
+        train_queue, valid_queue, num_classes, test_queue = datasets.get_loaders(args)
 
         if eval_args.eval_on_train:
             logging.info('Using the training data for eval.')
             valid_queue = train_queue
+        if eval_args.eval_on_test:
+            logging.info('Using the test data for eval.')
+            valid_queue = test_queue
 
         # get number of bits
-        num_output = utils.num_output(args.dataset)
+        num_output = utils.num_output(args.dataset, args)
         bpd_coeff = 1. / np.log(2.) / num_output
 
         valid_neg_log_p, valid_nelbo = test(valid_queue, model, num_samples=eval_args.num_iw_samples, args=args, logging=logging)
@@ -78,7 +83,7 @@ def main(eval_args):
         with torch.no_grad():
             n = int(np.floor(np.sqrt(num_samples)))
             set_bn(model, bn_eval_mode, num_samples=36, t=eval_args.temp, iter=500)
-            for ind in range(5):     # sampling is repeated.
+            for ind in range(eval_args.repetition):     # sampling is repeated.
                 torch.cuda.synchronize()
                 start = time()
                 with autocast():
@@ -89,13 +94,18 @@ def main(eval_args):
                 torch.cuda.synchronize()
                 end = time()
 
+                # save to file
+                total_name = "{}/data_to_save_{}_{}.pickle".format(eval_args.save, eval_args.name_to_save, ind)
+                with open(total_name, 'wb') as handle:
+                    pickle.dump(output_img.deatach().numpy(), handle, protocol=pickle.HIGHEST_PROTOCOL)
+
                 output_tiled = utils.tile_image(output_img, n).cpu().numpy().transpose(1, 2, 0)
                 logging.info('sampling time per batch: %0.3f sec', (end - start))
                 output_tiled = np.asarray(output_tiled * 255, dtype=np.uint8)
                 output_tiled = np.squeeze(output_tiled)
 
                 plt.imshow(output_tiled)
-                plt.show()
+                plt.savefig("{}/generation_{}_{}".format(eval_args.save, eval_args.name_to_save, ind))
 
 
 if __name__ == '__main__':
@@ -105,10 +115,14 @@ if __name__ == '__main__':
                         help='location of the checkpoint')
     parser.add_argument('--save', type=str, default='/tmp/expr',
                         help='location of the checkpoint')
+    parser.add_argument('--name_to_save', type=str, default='/tmp/expr',
+                        help='location of the checkpoint')
     parser.add_argument('--eval_mode', type=str, default='sample', choices=['sample', 'evaluate'],
                         help='evaluation mode. you can choose between sample or evaluate.')
     parser.add_argument('--eval_on_train', action='store_true', default=False,
                         help='Settings this to true will evaluate the model on training data.')
+    parser.add_argument('--eval_on_test', action='store_true', default=False,
+                        help='Settings this to true will evaluate the model on test data.')
     parser.add_argument('--data', type=str, default='/tmp/data',
                         help='location of the data corpus')
     parser.add_argument('--readjust_bn', action='store_true', default=False,
@@ -117,6 +131,8 @@ if __name__ == '__main__':
                         help='The temperature used for sampling.')
     parser.add_argument('--num_iw_samples', type=int, default=1000,
                         help='The number of IW samples used in test_ll mode.')
+    parser.add_argument('--repetition', type=int, default=50,
+                        help='The number of time the sampling is repeated.')
     # DDP.
     parser.add_argument('--local_rank', type=int, default=0,
                         help='rank of process')

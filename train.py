@@ -32,7 +32,7 @@ def main(args):
     writer = utils.Writer(args.global_rank, args.save)
 
     # Get data loaders.
-    train_queue, valid_queue, num_classes = datasets.get_loaders(args)
+    train_queue, valid_queue, num_classes, _ = datasets.get_loaders(args)
     args.num_total_iter = len(train_queue) * args.epochs
     warmup_iters = len(train_queue) * args.warmup_epochs
     swa_start = len(train_queue) * (args.epochs - 1)
