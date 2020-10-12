@@ -135,7 +135,6 @@ class AutoEncoder(nn.Module):
 
         # general cell parameters
         self.input_size = get_input_size(self.dataset, args)
-
         # decoder param
         self.num_mix_output = 10
 
@@ -192,9 +191,11 @@ class AutoEncoder(nn.Module):
         self.sr_v = {}
         self.num_power_iter = 4
 
+        self.in_channels = args.in_channels
+
     def init_stem(self):
         Cout = self.num_channels_enc
-        Cin = 1 if self.dataset == 'mnist' else 3
+        Cin = 1 if self.dataset == 'mnist' else self.in_channels
         stem = Conv2D(Cin, Cout, 3, padding=1, bias=True)
         return stem
 

@@ -142,6 +142,11 @@ if __name__ == '__main__':
                         help='seed used for initialization')
     parser.add_argument('--master_address', type=str, default='127.0.0.1',
                         help='address for master')
+    parser.add_argument("--x", default=50, type=int)
+    parser.add_argument("--y", default=99, type=int)
+    parser.add_argument("--t", default=3, type=int)
+    parser.add_argument('--source_folder', default="/Users/alessandrozonta/Desktop/",
+                        help="root where to store data")
 
     args = parser.parse_args()
     utils.create_exp_dir(args.save)
